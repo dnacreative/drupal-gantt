@@ -1,0 +1,6 @@
+name = Gantt
+description = Very simple helper for Gantt diagrams
+core = 7.x
+php = 5.3
+autoload[psr-0][Gantt] = src
+dependencies[] = autoloader

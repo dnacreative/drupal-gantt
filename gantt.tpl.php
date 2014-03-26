@@ -1,0 +1,1 @@
+<div <?php echo $attributes ?> class="<?php echo $classes; ?>"></div>

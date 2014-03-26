@@ -1,0 +1,90 @@
+<?php
+
+/**
+ * Drupal Gantt module.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function gantt_theme() {
+  return array(
+    'gantt' => array(
+      'variables' => array(
+        'diagram' => null, // Can be a source too.
+        'cssid' => null,
+      ),
+      'template' => 'gantt',
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function gantt_library() {
+  return array(
+    'jqcompat' => array(
+      'title' => "Few jQuery compat fixes",
+      'version' => '0.1',
+      'website' => "http://www.makina-corpus.com",
+      'js' => array(
+        drupal_get_path('module', 'gantt') . '/assets/jqcompat.js' => array(),
+      ),
+    ),
+    'jquery.gantt' => array(
+      'title' => "jQuery.Gantt",
+      'version' => '1.0',
+      'website' => "https://github.com/taitems/jQuery.Gantt",
+      'js' => array(
+        drupal_get_path('module', 'gantt') . '/assets/jQuery.Gantt/js/jquery.fn.gantt.min.js' => array(),
+      ),
+      'css' => array(
+        // Included CSS is the copy of style.css from jQuery.Gantt: due to
+        // a very stupid Drupal behavior we can't use the original name else
+        // core would believe it's an override from the theme.
+        drupal_get_path('module', 'gantt') . '/assets/jQuery.Gantt/css/jquery.gantt.style.css' => array(),
+      ),
+      'dependencies' => array(
+        array('gantt', 'jqcompat'),
+      ),
+    ),
+  );
+}
+
+/**
+ * Create new Gantt diagram.
+ *
+ * @return Gantt\DefaultSource
+ */
+function gantt_create() {
+  return new \Gantt\DefaultSource();
+}
+
+/**
+ * Implements template_preprocess_HOOK().
+ */
+function template_preprocess_gantt(&$variables) {
+
+  if (!isset($variables['cssid'])) {
+    $variables['cssid'] = drupal_html_id('gantt');
+  }
+
+  $variables['classes_array'][] = 'gantt';
+  $variables['attributes_array']['id'] = $variables['cssid'];
+
+  $diagram = $variables['diagram'];
+  if ($diagram instanceof \Gantt\SourceInterface) {
+    $diagram = new \Gantt\Diagram($diagram);
+  }
+
+  if ($diagram instanceof \Gantt\Diagram) {
+    $code = '(function ($) {"use strict";$("#' . $variables['cssid'] . '").gantt(' . json_encode($diagram->getClientOptions()) . ');}(jQuery));';
+    drupal_add_library('gantt', 'jquery.gantt');
+    drupal_add_js($code, array(
+      'defer' => 'defer',
+      'scope' => 'footer',
+      'type'  => 'inline',
+    ));
+  }
+}
